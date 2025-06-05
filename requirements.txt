@@ -1,0 +1,82 @@
+# Enhanced Ride Guardian Desktop - Requirements for Windows Installation
+# Updated: June 2025
+# Compatible with Python 3.8+ on Windows 10/11
+
+# Core GUI Framework
+PyQt6>=6.4.0,<7.0.0
+PyQt6-Qt6>=6.4.0
+
+# Data Processing and Analysis
+pandas>=1.5.0,<3.0.0
+numpy>=1.21.0,<2.0.0
+python-dateutil>=2.8.0
+
+# Excel and Office Document Handling
+openpyxl>=3.0.9,<4.0.0
+xlsxwriter>=3.0.0,<4.0.0
+xlrd>=2.0.0,<3.0.0
+
+# PDF Generation and Reporting
+reportlab>=3.6.0,<5.0.0
+fpdf2>=2.5.0
+
+# Data Visualization and Charts
+matplotlib>=3.5.0,<4.0.0
+seaborn>=0.11.0,<1.0.0
+
+# Image Processing
+Pillow>=9.0.0,<11.0.0
+
+# Network and API Communication
+requests>=2.28.0,<3.0.0
+urllib3>=1.26.0,<3.0.0
+certifi>=2022.0.0
+
+# Google Maps API Integration
+googlemaps>=4.7.0,<5.0.0
+
+# Date and Time Handling
+pytz>=2022.1
+
+# Windows-Specific Dependencies
+# These ensure proper Windows integration and performance
+pywin32>=227; sys_platform == "win32"
+pypiwin32>=223; sys_platform == "win32"
+
+# Development and Testing Dependencies (Optional)
+pytest>=7.0.0,<8.0.0
+pytest-qt>=4.2.0,<5.0.0
+
+# Enhanced Export and Template Processing
+jinja2>=3.0.0,<4.0.0
+markupsafe>=2.1.0
+
+# Logging and Configuration
+configparser>=5.2.0
+
+# German Localization Support
+babel>=2.10.0,<3.0.0
+
+# File System and Path Handling (Windows compatibility)
+pathlib2>=2.3.0; python_version < "3.4"
+pathspec>=0.9.0
+
+# JSON and Configuration File Handling
+jsonschema>=4.0.0,<5.0.0
+
+# Error Tracking and Debugging
+traceback2>=1.4.0
+
+# Memory and Performance Optimization
+psutil>=5.9.0,<6.0.0
+
+# Windows Font and Display Support
+fonttools>=4.33.0,<5.0.0
+
+# Additional Windows System Integration
+winreg-kb>=1.0.0; sys_platform == "win32"
+
+# Packaging and Distribution (for .exe creation)
+pyinstaller>=5.10.0,<7.0.0
+
+# Note: SQLite3 is included with Python standard library

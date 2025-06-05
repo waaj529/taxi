@@ -1,0 +1,140 @@
+name: Build Windows Executables
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+        
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~\AppData\Local\pip\Cache
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+          
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        
+    - name: Build Windows executables
+      run: |
+        python build_windows_exe.py --apps all --clean
+        
+    - name: Test executables exist
+      run: |
+        if (!(Test-Path "dist/RideGuardian-Launcher/RideGuardian-Launcher.exe")) { 
+          throw "Launcher executable not found" 
+        }
+        if (!(Test-Path "dist/RideGuardian-SingleCompany/RideGuardian-SingleCompany.exe")) { 
+          throw "Single Company executable not found" 
+        }
+        if (!(Test-Path "dist/RideGuardian-MultiCompany/RideGuardian-MultiCompany.exe")) { 
+          throw "Multi Company executable not found" 
+        }
+        Write-Host "✅ All executables created successfully!"
+        
+    - name: Create release package
+      run: |
+        # Create release directory
+        New-Item -ItemType Directory -Force -Path "release"
+        
+        # Copy executables and installer
+        Copy-Item -Recurse "dist/*" "release/"
+        Copy-Item "install_windows.bat" "release/"
+        Copy-Item "BUILD_INFO.txt" "release/"
+        
+        # Create README for release
+        @"
+        # Ride Guardian Desktop - Windows Release
+        
+        ## Installation
+        1. Run 'install_windows.bat' as Administrator for system-wide installation
+        2. Or run executables directly from their folders
+        
+        ## Applications
+        - RideGuardian-Launcher.exe - Application selector
+        - RideGuardian-SingleCompany.exe - Single company fleet management
+        - RideGuardian-MultiCompany.exe - Multi-company fleet management
+        
+        ## System Requirements
+        - Windows 10/11 (64-bit)
+        - No Python installation required
+        
+        Built with GitHub Actions on $(Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC")
+        "@ | Out-File -FilePath "release/README.txt" -Encoding UTF8
+        
+    - name: Upload Windows executables
+      uses: actions/upload-artifact@v3
+      with:
+        name: ride-guardian-windows-executables
+        path: release/
+        retention-days: 30
+        
+    - name: Create ZIP package
+      run: |
+        Compress-Archive -Path "release/*" -DestinationPath "RideGuardian-Windows-${{ github.sha }}.zip"
+        
+    - name: Upload ZIP package
+      uses: actions/upload-artifact@v3
+      with:
+        name: ride-guardian-windows-zip
+        path: "RideGuardian-Windows-${{ github.sha }}.zip"
+        retention-days: 90
+
+  test-executables:
+    needs: build-windows
+    runs-on: windows-latest
+    
+    steps:
+    - name: Download built executables
+      uses: actions/download-artifact@v3
+      with:
+        name: ride-guardian-windows-executables
+        path: executables/
+        
+    - name: Test launcher executable
+      run: |
+        $process = Start-Process -FilePath "executables/RideGuardian-Launcher/RideGuardian-Launcher.exe" -PassThru -WindowStyle Hidden
+        Start-Sleep -Seconds 5
+        if (!$process.HasExited) {
+          $process.Kill()
+          Write-Host "✅ Launcher executable runs successfully"
+        } else {
+          throw "❌ Launcher executable failed to start"
+        }
+      timeout-minutes: 2
+      continue-on-error: true
+      
+    - name: Verify file integrity
+      run: |
+        $files = @(
+          "executables/RideGuardian-Launcher/RideGuardian-Launcher.exe",
+          "executables/RideGuardian-SingleCompany/RideGuardian-SingleCompany.exe", 
+          "executables/RideGuardian-MultiCompany/RideGuardian-MultiCompany.exe"
+        )
+        
+        foreach ($file in $files) {
+          if (Test-Path $file) {
+            $size = (Get-Item $file).Length / 1MB
+            Write-Host "✅ $($file): $([math]::Round($size, 1)) MB"
+          } else {
+            throw "❌ Missing: $file"
+          }
+        }

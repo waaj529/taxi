@@ -1,0 +1,29 @@
+FROM python:3.11-windowsservercore
+
+# Set working directory
+WORKDIR /app
+
+# Install system dependencies
+RUN powershell -Command "Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
+RUN choco install -y git
+
+# Copy requirements first for better caching
+COPY requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Build executables
+RUN python build_windows_exe.py --apps all --clean --skip-checks
+
+# Create final output directory
+RUN mkdir C:\output
+RUN xcopy /E /I /Y dist C:\output\dist
+RUN copy install_windows.bat C:\output\
+RUN copy BUILD_INFO.txt C:\output\
+
+# Set entrypoint for testing
+CMD ["python", "-c", "print('Windows executables built successfully!')"]

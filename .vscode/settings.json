@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "translations/*.ts": "xml"
+    },
+    "typescript.preferences.includePackageJsonAutoImports": "off",
+    "typescript.validate.enable": false
+}
