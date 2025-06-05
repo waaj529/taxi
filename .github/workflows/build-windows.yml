@@ -81,7 +81,7 @@ jobs:
         "@ | Out-File -FilePath "release/README.txt" -Encoding UTF8
         
     - name: Upload Windows executables
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ride-guardian-windows-executables
         path: release/
@@ -92,7 +92,7 @@ jobs:
         Compress-Archive -Path "release/*" -DestinationPath "RideGuardian-Windows-${{ github.sha }}.zip"
         
     - name: Upload ZIP package
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ride-guardian-windows-zip
         path: "RideGuardian-Windows-${{ github.sha }}.zip"
@@ -104,7 +104,7 @@ jobs:
     
     steps:
     - name: Download built executables
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: ride-guardian-windows-executables
         path: executables/
