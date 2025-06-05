@@ -181,14 +181,34 @@ def create_spec_file(app_name, config):
     exe_name = config['name']
     icon_path = config.get('icon', '')
     
-    # Hidden imports for PyQt6 and other modules
+    # Enhanced hidden imports for PyQt6 with explicit QtCharts support
     hidden_imports = [
+        # Core PyQt6 modules
         'PyQt6.QtCore',
         'PyQt6.QtGui', 
         'PyQt6.QtWidgets',
         'PyQt6.QtPrintSupport',
         'PyQt6.QtSvg',
+        
+        # QtCharts - explicit imports for all chart components
         'PyQt6.QtCharts',
+        'PyQt6.QtCharts.QChart',
+        'PyQt6.QtCharts.QChartView',
+        'PyQt6.QtCharts.QBarSet',
+        'PyQt6.QtCharts.QBarSeries',
+        'PyQt6.QtCharts.QBarCategoryAxis',
+        'PyQt6.QtCharts.QValueAxis',
+        'PyQt6.QtCharts.QPieSeries',
+        'PyQt6.QtCharts.QPieSlice',
+        'PyQt6.QtCharts.QLineSeries',
+        'PyQt6.QtCharts.QScatterSeries',
+        
+        # Additional PyQt6 modules that might be needed
+        'PyQt6.QtOpenGL',
+        'PyQt6.QtOpenGLWidgets',
+        'PyQt6.sip',
+        
+        # Python packages
         'pandas',
         'numpy',
         'openpyxl',
@@ -200,13 +220,39 @@ def create_spec_file(app_name, config):
         'PIL._tkinter_finder',
         'requests',
         'sqlite3',
+        
+        # Application modules
         'core.database',
         'core.translation_manager',
         'core.company_manager',
         'ui.views',
         'ui.components',
-        'ui.widgets'
+        'ui.widgets',
+        'ui.widgets.km_per_driver_widget'
     ]
+    
+    # Binaries to include - specifically for PyQt6-Charts
+    binaries = []
+    
+    # Try to find PyQt6 installation path for binaries
+    try:
+        import PyQt6
+        pyqt6_path = os.path.dirname(PyQt6.__file__)
+        
+        # Add QtCharts binaries if they exist
+        charts_dll_patterns = [
+            os.path.join(pyqt6_path, 'Qt6', 'bin', 'Qt6Charts.dll'),
+            os.path.join(pyqt6_path, 'Qt6', 'bin', 'Qt6ChartsQml.dll'),
+            os.path.join(pyqt6_path, 'Qt6Charts.dll'),
+            os.path.join(pyqt6_path, 'QtCharts.pyd'),
+        ]
+        
+        for pattern in charts_dll_patterns:
+            if os.path.exists(pattern):
+                binaries.append((pattern, '.'))
+                print(f"[INFO] Including QtCharts binary: {pattern}")
+    except Exception as e:
+        print(f"[WARNING] Could not locate PyQt6 binaries: {e}")
     
     # Data files to include - only add existing directories/files
     datas = []
@@ -271,10 +317,10 @@ block_cipher = None
 
 a = Analysis(['{script_path}'],
              pathex=['.'],
-             binaries=[],
+             binaries={binaries},
              datas={datas},
              hiddenimports={hidden_imports},
-             hookspath=[],
+             hookspath=['hooks'],
              hooksconfig={{}},
              runtime_hooks=[],
              excludes={excludes},

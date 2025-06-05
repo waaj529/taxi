@@ -921,3 +921,9 @@ class PreciseGermanFahrtenbuchExporter:
         self.google_maps.preload_common_routes(headquarters, list(unique_locations))
         
         print(f"✅ Preloaded {len(unique_locations)} common addresses for company {company_id}")
+
+class EnhancedFahrtenbuchExporter(PreciseGermanFahrtenbuchExporter):
+    """
+    Alias for backwards compatibility
+    """
+    pass
