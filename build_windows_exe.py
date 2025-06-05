@@ -43,10 +43,10 @@ BUILD_CONFIG = {
 def detect_platform():
     """Detect current platform and provide warnings for cross-compilation"""
     current_platform = platform.system().lower()
-    print(f"🖥️  Current platform: {platform.system()} {platform.machine()}")
+    print(f"[INFO] Current platform: {platform.system()} {platform.machine()}")
     
     if current_platform != 'windows':
-        print("⚠️  Cross-compiling for Windows from non-Windows platform")
+        print("[WARNING] Cross-compiling for Windows from non-Windows platform")
         print("   • Executables may need testing on actual Windows systems")
         print("   • Some Windows-specific features might not work correctly")
         if current_platform == 'darwin':
@@ -54,35 +54,35 @@ def detect_platform():
         elif current_platform == 'linux':
             print("   • Consider using Wine or Windows VM for testing")
     else:
-        print("✅ Building on native Windows platform")
+        print("[SUCCESS] Building on native Windows platform")
     
     return current_platform
 
 def check_prerequisites():
     """Check if all prerequisites are installed"""
-    print("🔍 Checking prerequisites...")
+    print("[INFO] Checking prerequisites...")
     
     # Check Python version
     if sys.version_info < (3, 8):
-        print("❌ Python 3.8+ is required")
+        print("[ERROR] Python 3.8+ is required")
         print(f"   Current version: {sys.version}")
         print("   Please install Python 3.8+ from https://www.python.org/downloads/")
         return False
     
-    print(f"✅ Python {sys.version}")
+    print(f"[SUCCESS] Python {sys.version}")
     
     # Check PyInstaller
     try:
         import PyInstaller
-        print(f"✅ PyInstaller {PyInstaller.__version__}")
+        print(f"[SUCCESS] PyInstaller {PyInstaller.__version__}")
     except ImportError:
-        print("❌ PyInstaller not found. Installing...")
+        print("[ERROR] PyInstaller not found. Installing...")
         try:
             subprocess.run([sys.executable, '-m', 'pip', 'install', 'pyinstaller>=5.10.0'], 
                          check=True, capture_output=True)
-            print("✅ PyInstaller installed successfully")
+            print("[SUCCESS] PyInstaller installed successfully")
         except subprocess.CalledProcessError as e:
-            print(f"❌ Failed to install PyInstaller: {e}")
+            print(f"[ERROR] Failed to install PyInstaller: {e}")
             return False
         
     # Check other required packages
@@ -101,19 +101,19 @@ def check_prerequisites():
     for import_name, package_name in required_packages.items():
         try:
             __import__(import_name)
-            print(f"✅ {package_name}")
+            print(f"[SUCCESS] {package_name}")
         except ImportError:
-            print(f"⚠️  {package_name} not found")
+            print(f"[WARNING] {package_name} not found")
             missing_packages.append(package_name)
     
     if missing_packages:
-        print(f"📦 Installing missing packages: {', '.join(missing_packages)}")
+        print(f"[INFO] Installing missing packages: {', '.join(missing_packages)}")
         try:
             subprocess.run([sys.executable, '-m', 'pip', 'install'] + missing_packages,
                          check=True, capture_output=True)
-            print("✅ Missing packages installed")
+            print("[SUCCESS] Missing packages installed")
         except subprocess.CalledProcessError as e:
-            print(f"⚠️  Some packages may not have installed correctly: {e}")
+            print(f"[WARNING] Some packages may not have installed correctly: {e}")
             
     return True
 
@@ -125,7 +125,7 @@ def create_icon_file():
     icon_path = icon_dir / 'ride_guardian_icon.ico'
     
     if not icon_path.exists():
-        print("📁 Creating basic icon file...")
+        print("[INFO] Creating basic icon file...")
         try:
             from PIL import Image, ImageDraw, ImageFont
             
@@ -165,10 +165,10 @@ def create_icon_file():
             
             # Save as ICO
             img.save(str(icon_path), format='ICO', sizes=[(256, 256), (128, 128), (64, 64), (32, 32), (16, 16)])
-            print(f"✅ Created icon: {icon_path}")
+            print(f"[SUCCESS] Created icon: {icon_path}")
             
         except ImportError:
-            print("⚠️  PIL not available, creating placeholder icon")
+            print("[WARNING] PIL not available, creating placeholder icon")
             # Create a simple placeholder
             with open(icon_path, 'w') as f:
                 f.write("# Placeholder icon file")
@@ -222,7 +222,7 @@ def create_spec_file(app_name, config):
     for src, dst in data_sources:
         if os.path.exists(src):
             datas.append((src, dst))
-            print(f"📁 Including data: {src} -> {dst}")
+            print(f"[INFO] Including data: {src} -> {dst}")
     
     # Add database files if they exist
     for db_file in ['*.db', '*.sqlite', '*.sqlite3']:
@@ -230,7 +230,7 @@ def create_spec_file(app_name, config):
         db_matches = glob.glob(db_file)
         for db_match in db_matches:
             datas.append((db_match, '.'))
-            print(f"📁 Including database: {db_match}")
+            print(f"[INFO] Including database: {db_match}")
     
     # Add Excel files if they exist
     for excel_file in ['*.xlsx', '*.xls']:
@@ -238,7 +238,7 @@ def create_spec_file(app_name, config):
         excel_matches = glob.glob(excel_file)
         for excel_match in excel_matches:
             datas.append((excel_match, '.'))
-            print(f"📁 Including Excel file: {excel_match}")
+            print(f"[INFO] Including Excel file: {excel_match}")
     
     # Add translation files if they exist
     translation_files = []
@@ -248,7 +248,7 @@ def create_spec_file(app_name, config):
             trans_matches = glob.glob(f'translations/{ext}')
             for trans_match in trans_matches:
                 translation_files.append((trans_match, 'translations'))
-                print(f"📁 Including translation: {trans_match}")
+                print(f"[INFO] Including translation: {trans_match}")
     
     datas.extend(translation_files)
     
@@ -317,7 +317,7 @@ coll = COLLECT(exe,
     with open(spec_file, 'w', encoding='utf-8') as f:
         f.write(spec_content)
     
-    print(f"📝 Created spec file: {spec_file}")
+    print(f"[INFO] Created spec file: {spec_file}")
     return spec_file
 
 def create_version_info():
@@ -359,18 +359,18 @@ VSVersionInfo(
     with open('version_info.txt', 'w', encoding='utf-8') as f:
         f.write(version_info)
     
-    print("📝 Created version info file")
+    print("[INFO] Created version info file")
 
 def build_executable(app_name, config, clean_build=False):
     """Build a single executable"""
-    print(f"\n🚀 Building {app_name} executable...")
+    print(f"\n[BUILD] Building {app_name} executable...")
     
     script_path = config['script']
     exe_name = config['name']
     
     # Check if script exists
     if not os.path.exists(script_path):
-        print(f"❌ Script not found: {script_path}")
+        print(f"[ERROR] Script not found: {script_path}")
         return False
     
     # Clean previous build
@@ -383,24 +383,24 @@ def build_executable(app_name, config, clean_build=False):
             try:
                 if os.path.isdir(build_dir):
                     shutil.rmtree(build_dir)
-                    print(f"🧹 Cleaned build directory: {build_dir}")
+                    print(f"[CLEAN] Cleaned build directory: {build_dir}")
                 else:
                     os.remove(build_dir)
-                    print(f"🧹 Removed build file: {build_dir}")
+                    print(f"[CLEAN] Removed build file: {build_dir}")
             except Exception as e:
-                print(f"⚠️  Could not clean build directory {build_dir}: {e}")
+                print(f"[WARNING] Could not clean build directory {build_dir}: {e}")
         
         # Safely remove dist directory
         if os.path.exists(dist_dir):
             try:
                 if os.path.isdir(dist_dir):
                     shutil.rmtree(dist_dir)
-                    print(f"🧹 Cleaned dist directory: {dist_dir}")
+                    print(f"[CLEAN] Cleaned dist directory: {dist_dir}")
                 else:
                     os.remove(dist_dir)
-                    print(f"🧹 Removed dist file: {dist_dir}")
+                    print(f"[CLEAN] Removed dist file: {dist_dir}")
             except Exception as e:
-                print(f"⚠️  Could not clean dist directory {dist_dir}: {e}")
+                print(f"[WARNING] Could not clean dist directory {dist_dir}: {e}")
     
     # Create spec file
     spec_file = create_spec_file(app_name, config)
@@ -414,10 +414,10 @@ def build_executable(app_name, config, clean_build=False):
             spec_file
         ]
         
-        print(f"🔨 Running: {' '.join(cmd)}")
+        print(f"[BUILD] Running: {' '.join(cmd)}")
         result = subprocess.run(cmd, check=True, capture_output=True, text=True)
         
-        print(f"✅ Successfully built {exe_name}")
+        print(f"[SUCCESS] Successfully built {exe_name}")
         
         # Post-build: Fix executable for Windows
         dist_folder = f'dist/{exe_name}'
@@ -428,37 +428,37 @@ def build_executable(app_name, config, clean_build=False):
         if os.path.exists(exe_path_unix) and not os.path.exists(exe_path_windows):
             try:
                 os.rename(exe_path_unix, exe_path_windows)
-                print(f"🔧 Fixed executable: {exe_name} -> {exe_name}.exe")
+                print(f"[FIX] Fixed executable: {exe_name} -> {exe_name}.exe")
             except Exception as e:
-                print(f"⚠️  Could not rename executable: {e}")
+                print(f"[WARNING] Could not rename executable: {e}")
         
         # Check if executable was created
         if os.path.exists(exe_path_windows):
             size_mb = os.path.getsize(exe_path_windows) / (1024 * 1024)
-            print(f"📁 Windows executable created: {exe_path_windows} ({size_mb:.1f} MB)")
+            print(f"[INFO] Windows executable created: {exe_path_windows} ({size_mb:.1f} MB)")
             
             # Verify _internal folder exists
             internal_path = f'{dist_folder}/_internal'
             if os.path.exists(internal_path):
-                print(f"   📦 Dependencies folder: _internal/")
+                print(f"   [INFO] Dependencies folder: _internal/")
             
             return True
         else:
-            print(f"❌ Executable not found: {exe_path_windows}")
+            print(f"[ERROR] Executable not found: {exe_path_windows}")
             return False
         
     except subprocess.CalledProcessError as e:
-        print(f"❌ Build failed for {app_name}")
+        print(f"[ERROR] Build failed for {app_name}")
         print(f"Error: {e.stderr}")
         return False
     
     except Exception as e:
-        print(f"❌ Unexpected error building {app_name}: {e}")
+        print(f"[ERROR] Unexpected error building {app_name}: {e}")
         return False
 
 def fix_windows_executables():
     """Fix executables for Windows by adding .exe extension and ensuring proper format"""
-    print("\n🔧 Fixing Windows executables...")
+    print("\n[FIX] Fixing Windows executables...")
     
     fixed_count = 0
     for app_name, config in BUILD_CONFIG.items():
@@ -474,31 +474,31 @@ def fix_windows_executables():
                 try:
                     # Rename the executable to have .exe extension
                     os.rename(exe_path, exe_path_with_ext)
-                    print(f"✅ Fixed: {exe_name} -> {exe_name}.exe")
+                    print(f"[SUCCESS] Fixed: {exe_name} -> {exe_name}.exe")
                     fixed_count += 1
                     
                     # Verify the executable exists
                     if os.path.exists(exe_path_with_ext):
                         size_mb = os.path.getsize(exe_path_with_ext) / (1024 * 1024)
-                        print(f"   📁 Windows executable: {exe_path_with_ext} ({size_mb:.1f} MB)")
+                        print(f"   [INFO] Windows executable: {exe_path_with_ext} ({size_mb:.1f} MB)")
                         
                 except Exception as e:
-                    print(f"❌ Failed to fix {exe_name}: {e}")
+                    print(f"[ERROR] Failed to fix {exe_name}: {e}")
             elif os.path.exists(exe_path_with_ext):
                 size_mb = os.path.getsize(exe_path_with_ext) / (1024 * 1024)
-                print(f"✅ Already fixed: {exe_path_with_ext} ({size_mb:.1f} MB)")
+                print(f"[SUCCESS] Already fixed: {exe_path_with_ext} ({size_mb:.1f} MB)")
                 fixed_count += 1
     
     if fixed_count > 0:
-        print(f"🎉 Fixed {fixed_count} executables for Windows compatibility")
+        print(f"[SUCCESS] Fixed {fixed_count} executables for Windows compatibility")
     else:
-        print("⚠️  No executables found to fix")
+        print("[WARNING] No executables found to fix")
     
     return fixed_count
 
 def create_windows_launcher_scripts():
     """Create .bat launcher scripts for each application"""
-    print("\n📝 Creating Windows launcher scripts...")
+    print("\n[INFO] Creating Windows launcher scripts...")
     
     launcher_scripts = {
         'RideGuardian-Launcher': 'Ride Guardian Launcher',
@@ -522,9 +522,9 @@ start "" "{exe_name}.exe"
             with open(bat_path, 'w', encoding='utf-8') as f:
                 f.write(bat_content)
             
-            print(f"✅ Created launcher: {bat_path}")
+            print(f"[SUCCESS] Created launcher: {bat_path}")
     
-    print("🎉 Windows launcher scripts created successfully!")
+    print("[SUCCESS] Windows launcher scripts created successfully!")
 
 def create_installer_script():
     """Create a batch script for easy Windows installation"""
@@ -587,7 +587,7 @@ pause
     with open('install_windows.bat', 'w', encoding='utf-8') as f:
         f.write(installer_script)
     
-    print("📝 Created Windows installer script: install_windows.bat")
+    print("[INFO] Created Windows installer script: install_windows.bat")
 
 def create_build_info():
     """Create a build information file"""
@@ -626,7 +626,7 @@ Distribution:
     with open('BUILD_INFO.txt', 'w', encoding='utf-8') as f:
         f.write(build_info)
     
-    print("📝 Created build information file: BUILD_INFO.txt")
+    print("[INFO] Created build information file: BUILD_INFO.txt")
 
 def main():
     parser = argparse.ArgumentParser(description='Build Windows .exe files for Ride Guardian Desktop')
@@ -637,17 +637,17 @@ def main():
     
     args = parser.parse_args()
     
-    print("🚗 Ride Guardian Desktop - Windows .exe Builder")
+    print("Ride Guardian Desktop - Windows .exe Builder")
     print("=" * 50)
     
     # Check prerequisites
     if not args.skip_checks and not check_prerequisites():
-        print("❌ Prerequisites check failed")
+        print("[ERROR] Prerequisites check failed")
         return 1
     
     # Install requirements
     if os.path.exists('requirements.txt'):
-        print("📦 Installing requirements...")
+        print("[INFO] Installing requirements...")
         subprocess.run([sys.executable, '-m', 'pip', 'install', '-r', 'requirements.txt'])
     
     # Create necessary files
@@ -671,7 +671,7 @@ def main():
             else:
                 failed_builds.append(app_name)
         else:
-            print(f"⚠️  Unknown app: {app_name}")
+            print(f"[WARNING] Unknown app: {app_name}")
     
     # Post-build: Fix any remaining Windows compatibility issues
     if successful_builds:
@@ -682,18 +682,18 @@ def main():
     
     # Summary
     print("\n" + "=" * 50)
-    print("📊 Build Summary:")
-    print(f"✅ Successful: {len(successful_builds)} - {', '.join(successful_builds)}")
+    print("Build Summary:")
+    print(f"[SUCCESS] Successful: {len(successful_builds)} - {', '.join(successful_builds)}")
     if failed_builds:
-        print(f"❌ Failed: {len(failed_builds)} - {', '.join(failed_builds)}")
+        print(f"[ERROR] Failed: {len(failed_builds)} - {', '.join(failed_builds)}")
     
     if successful_builds:
-        print("\n🎉 Build completed successfully!")
-        print("📁 All executables have proper .exe extensions for Windows")
-        print("📁 Executables are in the 'dist' directory")
-        print("💿 Run 'install_windows.bat' as Administrator to install")
+        print("\n[SUCCESS] Build completed successfully!")
+        print("[INFO] All executables have proper .exe extensions for Windows")
+        print("[INFO] Executables are in the 'dist' directory")
+        print("[INFO] Run 'install_windows.bat' as Administrator to install")
     else:
-        print("\n❌ No executables were built successfully")
+        print("\n[ERROR] No executables were built successfully")
         return 1
     
     return 0
