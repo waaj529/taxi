@@ -1,6 +1,6 @@
 # Enhanced Ride Guardian Desktop - Requirements for Windows Installation
 # Updated: June 2025
-# Compatible with Python 3.8+ on Windows 10/11
+# Compatible with Python 3.8-3.10 on Windows 10/11
 
 # Core GUI Framework
 PyQt6>=6.4.0,<7.0.0
@@ -8,7 +8,7 @@ PyQt6-Qt6>=6.4.0
 
 # Data Processing and Analysis
 pandas>=1.5.0,<3.0.0
-numpy>=1.21.0,<2.0.0
+numpy>=1.21.0,<1.25.0
 python-dateutil>=2.8.0
 
 # Excel and Office Document Handling
@@ -73,8 +73,8 @@ psutil>=5.9.0,<6.0.0
 # Windows Font and Display Support
 fonttools>=4.33.0,<5.0.0
 
-# Additional Windows System Integration
-winreg-kb>=1.0.0; sys_platform == "win32"
+# Windows Registry Access (using built-in winreg module instead of winreg-kb)
+# Note: winreg is part of Python's standard library on Windows
 
 # Packaging and Distribution (for .exe creation)
 pyinstaller>=5.10.0,<7.0.0
