@@ -1,4 +1,5 @@
-# Ride Guardian Desktop Application
+Taxi Automation Fleet Management System ![image](https://github.com/user-attachments/assets/f9bb2d36-7104-413b-b7f1-b6be9b808f47)
+
 
 This document provides instructions on how to set up and run the Ride Guardian desktop application, converted from the original web application.
 
